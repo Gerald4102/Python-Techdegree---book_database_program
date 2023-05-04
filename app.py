@@ -8,7 +8,7 @@ import time
 import logging
 
 
-logging.basicConfig(filename='app_log.log', level=logging.DEBUG)
+# logging.basicConfig(filename='app_log.log', level=logging.DEBUG)
 
 
 def menu():
@@ -54,8 +54,7 @@ def clean_date(date_str):
         \rThe date should be a valid date from the past.
         \rEx: May 4, 2023
         \rPress ENTER to try again.
-        \r*************************
-        ''')
+        \r*************************''')
         return
     else:
         return return_date
@@ -70,11 +69,26 @@ def clean_price(price_str):
         \rThe price should be a number without a currency symbol.
         \rEx: 29.99
         \rPress ENTER to try again.
-        \r*************************
-        ''')
+        \r*************************''')
         return
     else:    
         return int(price)
+
+
+def clean_id(id_str, options):
+    try:
+        book_id = int(id_str)
+        if book_id not in options:
+            raise ValueError
+    except ValueError:
+        input('''
+        \n******ID ERROR*********
+        \rThe ID should be a number from the list.
+        \rPress ENTER to try again.
+        \r*************************''')
+        return
+    else:
+        return book_id
 
 
 def add_csv():
@@ -122,9 +136,25 @@ def app():
                 print(f'{book.id} | {book.title} | {book.author}')
             input('\nPress Enter to return to the main menu...')
         elif choice == 3:
-            #edit book
-
-            pass
+            # search book
+            id_options = []
+            for book in session.query(Book):
+                id_options.append(book.id)
+            id_error = True
+            while id_error:
+                id_choice = input(f'''
+                \nHere are the IDs for the books:
+                \r{id_options}
+                \rChoose an ID and press Enter: ''')
+                id_choice = clean_id(id_choice, id_options)
+                if type(id_choice) == int:
+                    id_error = False
+            the_book = session.query(Book).filter(Book.id==id_choice).first()
+            print(f'''
+            \r{the_book.title} by {the_book.author}
+            \rPublished: {the_book.published_date}
+            \rPrice: £{the_book.price / 100}''')
+            input('\nPress any key to return to the main menu... ')
         elif choice == 4:
             #book analysis
             pass
@@ -140,7 +170,6 @@ if __name__ == '__main__':
     app()
 
 
-    for book in session.query(Book):
-        print(book.id, '-', book)
-    print('\n')
-
+    # for book in session.query(Book):
+    #     print(book.id, '-', book)
+    # print('\n')
