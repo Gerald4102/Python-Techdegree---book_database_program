@@ -5,6 +5,10 @@ from models import (Base, engine,
 import csv
 import datetime
 import time
+import logging
+
+
+logging.basicConfig(filename='app_log.log', level=logging.DEBUG)
 
 
 def menu():
@@ -28,7 +32,6 @@ def menu():
             ''')
 
 
-# add books to the database
 # edit books
 # delete books
 # search books
@@ -40,15 +43,38 @@ def clean_date(date_str):
     months = ['January', 'February', 'March', 'April', 'May', 'June', 
               'July', 'August', 'September', 'October', 'November', 'December']
     split_date = date_str.split(' ')
-    month = months.index(split_date[0]) + 1
-    day = int(split_date[1].split(',')[0])
-    year = int(split_date[2])
-    return datetime.date(year, month, day)
+    try:
+        month = months.index(split_date[0]) + 1
+        day = int(split_date[1].split(',')[0])
+        year = int(split_date[2])
+        return_date =  datetime.date(year, month, day)
+    except (ValueError, IndexError):
+        input('''
+        \n******DATE ERROR*********
+        \rThe date should be a valid date from the past.
+        \rEx: May 4, 2023
+        \rPress ENTER to try again.
+        \r*************************
+        ''')
+        return
+    else:
+        return return_date
 
 
 def clean_price(price_str):
-    price = float(price_str) * 100
-    return int(price)
+    try:
+        price = float(price_str) * 100
+    except ValueError:
+        input('''
+        \n******PRICE ERROR*********
+        \rThe price should be a number without a currency symbol.
+        \rEx: 29.99
+        \rPress ENTER to try again.
+        \r*************************
+        ''')
+        return
+    else:    
+        return int(price)
 
 
 def add_csv():
@@ -64,6 +90,8 @@ def add_csv():
                 new_book = Book(title=title, author=author, published_date=date, price=price)
                 session.add(new_book)
         session.commit()
+        print('Book Added!')
+        time.sleep(1)
 
 def app():
     app_running = True
@@ -71,7 +99,23 @@ def app():
         choice = menu()
         if choice == 1:
             #add book
-            pass
+            title = input('Title: ')
+            author = input('Author: ') 
+            date_error = True
+            while date_error:
+                date = input('Published Date (Ex: May 1, 2014): ') 
+                date = clean_date(date)
+                if type(date) == datetime.date:
+                    date_error = False
+            price_error = True
+            while price_error:
+                price = input('Price (Ex: 29.99): ') 
+                price = clean_price(price)
+                if type(price) == int:
+                    price_error = False
+            new_book = Book(title=title, author=author, published_date=date, price=price)
+            session.add(new_book)
+            session.commit()
         elif choice == 2:
             #view all books
             pass
@@ -82,16 +126,18 @@ def app():
             #book analysis
             pass
         else:
-            print('GOODBYE')
-            time.sleep(1)
+            print('GOODBYE\n')
+            time.sleep(0.5)
             app_running = False
 
 
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
-    #app()
-    add_csv()
+    app()
+
 
     for book in session.query(Book):
-        print(book)
+        print(book.id, '-', book)
+    print('\n')
+
