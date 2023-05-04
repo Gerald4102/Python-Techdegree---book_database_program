@@ -90,8 +90,7 @@ def add_csv():
                 new_book = Book(title=title, author=author, published_date=date, price=price)
                 session.add(new_book)
         session.commit()
-        print('Book Added!')
-        time.sleep(1)
+
 
 def app():
     app_running = True
@@ -116,11 +115,15 @@ def app():
             new_book = Book(title=title, author=author, published_date=date, price=price)
             session.add(new_book)
             session.commit()
+            print('Book Added!')
+            time.sleep(1)
         elif choice == 2:
-            #view all books
-            pass
+            for book in session.query(Book):
+                print(f'{book.id} | {book.title} | {book.author}')
+            input('\nPress Enter to return to the main menu...')
         elif choice == 3:
             #edit book
+
             pass
         elif choice == 4:
             #book analysis
