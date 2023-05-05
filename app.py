@@ -14,16 +14,19 @@ import logging
 def menu():
     while True:
         print('''
-        \nPROGRAMMING BOOKS
+        \rPROGRAMMING BOOKS
         \r1) Add book
         \r2) View all books
         \r3) Search for book
         \r4) Book analysis
         \r5) Exit''')
-        choice = int(input('What would you like to do: '))
-        if choice in [1, 2, 3, 4, 5]:
-            return choice
+        try:
+            choice = int(input('What would you like to do: '))
+        except ValueError:
+            input('That is not a valid option. Press ENTER to continue...')
         else:
+            if choice in [1, 2, 3, 4, 5]:
+                return choice
             input('''
             \rPlease choose an option.
             \rA number from 1-5.
@@ -33,17 +36,21 @@ def menu():
 def submenu():
     while True:
         print('''
-        \n1) Edit
+        \r1) Edit
         \r2) Delete
         \r3) Return to main menu''')
-        choice = int(input('What would you like to do: '))
-        if choice in [1, 2, 3, 4, 5]:
-            return choice
+        try:
+            choice = int(input('What would you like to do: '))
+            if choice in [1, 2, 3]:
+                return choice
+        except ValueError:
+            input('That is not a valid option. Press ENTER to continue...')
         else:
             input('''
             \rPlease choose an option.
             \rA number from 1-5.
             \rPress ENTER to try again.''')
+
 
 def clean_date(date_str):
     months = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -202,13 +209,21 @@ def app():
                     time.sleep(1.5)
 
         elif choice == 4:
-            #book analysis
-            pass
+            oldest_book = session.query(Book).order_by(Book.published_date).first()
+            newest_book = session.query(Book).order_by(Book.published_date.desc()).first()
+            total_books = session.query(Book).count()
+            python_books = session.query(Book).filter(Book.title.like('%Python%')).count()
+            input(
+                f'''\n**** BOOK ANALYSIS ****
+                \rOldest book: {oldest_book.title} by {oldest_book.author} published {oldest_book.published_date}, price: £{oldest_book.price/100}
+                \rNewest book: {newest_book.title} by {newest_book.author} published {newest_book.published_date}, price: £{newest_book.price/100}
+                \rTotal books: {total_books}
+                \rNumber of Python books: {python_books}
+                \rPress Enter to return to the main menu...''')
         else:
             print('GOODBYE\n')
             time.sleep(0.5)
             app_running = False
-
 
 
 if __name__ == '__main__':
